@@ -1,10 +1,4 @@
 /*
- * BMA180Accelerometer.cpp
- *
- *  Created on: May 16, 2015
- *      Author: tb
- */
-/*
  * BMAAccelerator.cpp
  * Implementation of a class to interface with the Bosch BMA180 3 Axis Accelerometer
  * over the I2C bus
