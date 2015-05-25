@@ -25,6 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "BMA180Accelerometer.h"
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -33,13 +34,10 @@
 #include <sys/ioctl.h>
 #include <stropts.h>
 #include <stdio.h>
-#include "BMA180Accelerometer.h"
-#include <iostream>
 #include <math.h>
-using namespace std;
+#include <QDebug>
+
 #define MAX_BUS 64
-
-
 #define ACC_X_LSB 	0x02
 #define ACC_X_MSB 	0x03
 #define ACC_Y_LSB 	0x04
@@ -53,9 +51,9 @@ using namespace std;
 
 
 BMA180Accelerometer::BMA180Accelerometer(int bus, int address)
+    : I2CBus(bus),
+      I2CAddress(address)
 {
-	I2CBus = bus;
-	I2CAddress = address;
 	readFullSensorState();
 }
 
@@ -64,22 +62,23 @@ void BMA180Accelerometer::calculatePitchAndRoll()
 	double accelerationXSquared = this->accelerationX * this->accelerationX;
 	double accelerationYSquared = this->accelerationY * this->accelerationY;
 	double accelerationZSquared = this->accelerationZ * this->accelerationZ;
+
 	this->pitch = 180 * atan(accelerationX / sqrt(accelerationYSquared + accelerationZSquared)) / M_PI;
 	this->roll = 180 * atan(accelerationY / sqrt(accelerationXSquared + accelerationZSquared)) / M_PI;
 }
 
 int BMA180Accelerometer::readFullSensorState()
 {
-   //cout << "Starting BMA180 I2C sensor state read" << endl;
+   //qDebug() << "Starting BMA180 I2C sensor state read";
     char namebuf[MAX_BUS];
    	snprintf(namebuf, sizeof(namebuf), "/dev/i2c-%d", I2CBus);
     int file;
     if ((file = open(namebuf, O_RDWR)) < 0) {
-    	cerr << "Failed to open BMA180 Sensor on " << namebuf << " I2C Bus" << endl;
+        qDebug() << "Failed to open BMA180 Sensor on " << namebuf << " I2C Bus";
         return(1);
     }
     if (ioctl(file, I2C_SLAVE, I2CAddress) < 0) {
-        cerr << "I2C_SLAVE address " << I2CAddress << " failed..." << endl;
+        qDebug() << "I2C_SLAVE address " << I2CAddress << " failed...";
         return(2);
     }
 
@@ -88,56 +87,60 @@ int BMA180Accelerometer::readFullSensorState()
     // transferred with automatic address increment.
     char buf[1] = { 0x00 };
     if (write(file, buf, 1) != 1) {
-    	cerr << "Failed to Reset Address in readFullSensorState() " << endl;
+        qDebug() << "Failed to Reset Address in readFullSensorState() ";
     }
 
     int numberBytes = BMA180_I2C_BUFFER;
     int bytesRead = read(file, this->dataBuffer, numberBytes);
     if (bytesRead == -1) {
-    	cerr << "Failure to read Byte Stream in readFullSensorState()" << endl;
+        qDebug() << "Failure to read Byte Stream in readFullSensorState()";
     }
     close(file);
 
     // NOTE: Address 0x00 always holds the value 0x03 on the BMA180, so we can use that to indicate
     //  loss of capture
     if (this->dataBuffer[0]!= 0x03) {
-    	cerr << "MAJOR FAILURE: DATA WITH BMA180 HAS LOST SYNC!" << endl;
+        qDebug() << "MAJOR FAILURE: DATA WITH BMA180 HAS LOST SYNC!";
     }
 
-   // cout << "Number of bytes read was " << bytesRead << endl;
-   /// for (int i=0; i<8; i++){
+   // qDebug() << "Number of bytes read was " << bytesRead;
+   // for (int i = 0; i < 8; ++i){
     //       printf("Byte %02d is 0x%02x\n", i, dataBuffer[i]);
     //}
-    //cout << "Closing BMA180 I2C sensor state read" << endl;
+    //qDebug() << "Closing BMA180 I2C sensor state read";
 
     this->accelerationX = convertAcceleration(ACC_X_MSB, ACC_X_LSB);
     this->accelerationY = convertAcceleration(ACC_Y_MSB, ACC_Y_LSB);
     this->accelerationZ = convertAcceleration(ACC_Z_MSB, ACC_Z_LSB);
     this->calculatePitchAndRoll();
-    //cout << "Pitch:" << this->getPitch() << "   Roll:" << this->getRoll() <<  endl;
+    //qDebug() << "Pitch:" << this->getPitch() << "   Roll:" << this->getRoll();
 
     return 0;
 } // end readFullSensorState()
 
 int BMA180Accelerometer::convertAcceleration(int msb_reg_addr, int lsb_reg_addr)
 {
-	//	cout << "Converting " << (int) dataBuffer[msb_reg_addr] << " and " << (int) dataBuffer[lsb_reg_addr] << endl;;
+    // qDebug() << "Converting " << (int) dataBuffer[msb_reg_addr] << " and "
+    //        << (int) dataBuffer[lsb_reg_addr];
 	short temp = dataBuffer[msb_reg_addr];
 	temp = (temp << 8) | (dataBuffer[lsb_reg_addr]);
 	temp = temp >> 2;
 	temp = ~temp + 1;
-	//	cout << "The X acceleration is " << temp << endl;
+    // qDebug() << "The X acceleration is " << temp;
 
 	return temp;
 } // end convertAcceleration()
 
 void BMA180Accelerometer::displayMode(int iterations)
 {
+    QString debugString;
+
 	for(int i = 0; i < iterations; ++i)
 	{
 		this->readFullSensorState();
-		printf("Rotation (%d, %d, %d)", accelerationX, accelerationY, accelerationZ);
-	}
+        sprintf(debugString, "Rotation (%d, %d, %d)", accelerationX, accelerationY, accelerationZ);
+        qDebug() << debugString;
+    }
 }
 
 //  Temperature in 2's complement has a resolution of 0.5K/LSB
@@ -163,9 +166,9 @@ float BMA180Accelerometer::getTemperature()
 	}
 	this->temperature = offset + ((float)temperature * 0.5f);
 
-	//cout << "The temperature is " << this->temperature << endl;
+    //qDebug() << "The temperature is " << this->temperature;
 	//int temp_off = dataBuffer[0x37]>>1;
-	//cout << "Temperature offset raw value is: " << temp_off << endl;
+    //qDebug() << "Temperature offset raw value is: " << temp_off;
 
 	return this->temperature;
 } // end getTemperature()
@@ -180,7 +183,7 @@ BMA180_RANGE BMA180Accelerometer::getRange()
 	temp = temp & 0b00001110;
 	temp = temp >> 1;
 
-	//cout << "The current range is: " << (int)temp << endl;
+    // qDebug() << "The current range is: " << (int)temp;
 
 	this->range = (BMA180_RANGE)temp;
 
@@ -197,7 +200,7 @@ int BMA180Accelerometer::setRange(BMA180_RANGE range)
 	current = current & 0b11110001; 	//clear the current bits 3,2,1
 	temp = current | temp;
 	if (this->writeI2CDeviceByte(RANGE, temp)!= 0) {
-		cout << "Failure to update RANGE value" << endl;
+        qDebug() << "Failure to update RANGE value";
 		return 1;
 	}
 
@@ -210,13 +213,12 @@ BMA180_BANDWIDTH BMA180Accelerometer::getBandwidth()
 	char temp = dataBuffer[BANDWIDTH];   //bits 7->4
 
 	//char temp = this->readI2CDeviceByte(BANDWIDTH);  //bits 7,6,5,4
-	//	cout << "The value of bandwidth returned is: " << (int)temp << endl;
+    // qDebug() << "The value of bandwidth returned is: " << (int)temp;
 
 	temp = temp & 0b11110000;
 	temp = temp >> 4;
 
-//	cout << "The current bandwidth is: " << (int)temp << endl;
-
+    // qDebug() << "The current bandwidth is: " << (int)temp;
 	this->bandwidth = (BMA180_BANDWIDTH) temp;
 
 	return this->bandwidth;
@@ -232,7 +234,7 @@ int BMA180Accelerometer::setBandwidth(BMA180_BANDWIDTH bandwidth)
 	current = current & 0b00001111; 		//clear the current bits 7,6,5,4
 	temp = current | temp;
 	if(this->writeI2CDeviceByte(BANDWIDTH, temp) != 0) {
-		cout << "Failure to update BANDWIDTH value" << endl;
+        qDebug() << "Failure to update BANDWIDTH value";
 		return 1;
 	}
 
@@ -248,7 +250,7 @@ BMA180_MODECONFIG BMA180Accelerometer::getModeConfig()
     char temp = dataBuffer[MODE_CONFIG];
 	temp = temp & 0b00000011;
 
-	//cout << "The current mode config is: " << (int)temp << endl;
+    // qDebug() << "The current mode config is: " << (int)temp;
 
 	this->modeConfig = (BMA180_MODECONFIG)temp;
 
@@ -257,16 +259,16 @@ BMA180_MODECONFIG BMA180Accelerometer::getModeConfig()
 
 int BMA180Accelerometer::writeI2CDeviceByte(char address, char value)
 {
-    cout << "Starting BMA180 I2C sensor state write" << endl;
+    qDebug() << "Starting BMA180 I2C sensor state write";
     char namebuf[MAX_BUS];
    	snprintf(namebuf, sizeof(namebuf), "/dev/i2c-%d", I2CBus);
     int file;
     if ((file = open(namebuf, O_RDWR)) < 0) {
-    	cerr << "Failed to open BMA180 Sensor on " << namebuf << " I2C Bus" << endl;
+        qDebug() << "Failed to open BMA180 Sensor on " << namebuf << " I2C Bus";
         return(1);
     }
     if (ioctl(file, I2C_SLAVE, I2CAddress) < 0) {
-    	cerr << "I2C_SLAVE address " << I2CAddress << " failed..." << endl;
+        qDebug() << "I2C_SLAVE address " << I2CAddress << " failed...";
     	return(2);
     }
 
@@ -278,7 +280,7 @@ int BMA180Accelerometer::writeI2CDeviceByte(char address, char value)
     //     buf[1] = 0x28;
     //     buf[2] = 0x65;
     //  if ( write(file,buf,2) != 2) {
-    //	  cout << "Failure to write values to I2C Device " << endl;
+    //	  qDebug() << "Failure to write values to I2C Device ";
     //  }
 
     char buffer[2];
@@ -286,11 +288,11 @@ int BMA180Accelerometer::writeI2CDeviceByte(char address, char value)
     buffer[1] = value;
 
     if ( write(file, buffer, 2) != 2) {
-        cerr << "Failure to write values to I2C Device address." << endl;
+        qDebug() << "Failure to write values to I2C Device address.";
         return(3);
     }
     close(file);
-    cout << "Finished BMA180 I2C sensor state write" << endl;
+    qDebug() << "Finished BMA180 I2C sensor state write";
 
     return 0;
 } // end writeI2CDeviceByte()
@@ -298,16 +300,16 @@ int BMA180Accelerometer::writeI2CDeviceByte(char address, char value)
 /*
 char BMA180Accelerometer::readI2CDeviceByte(char address)
 {
-  //  cout << "Starting BMA180 I2C sensor state byte read" << endl;
+    // qDebug() << "Starting BMA180 I2C sensor state byte read";
     char namebuf[MAX_BUS];
    	snprintf(namebuf, sizeof(namebuf), "/dev/i2c-%d", I2CBus);
     int file;
     if ((file = open(namebuf, O_RDWR)) < 0) {
-		cout << "Failed to open BMA180 Sensor on " << namebuf << " I2C Bus" << endl;
+        qDebug() << "Failed to open BMA180 Sensor on " << namebuf << " I2C Bus";
 		return(1);
     }
     if (ioctl(file, I2C_SLAVE, I2CAddress) < 0) {
-		cout << "I2C_SLAVE address " << I2CAddress << " failed..." << endl;
+        qDebug() << "I2C_SLAVE address " << I2CAddress << " failed...";
 		return(2);
     }
 
@@ -316,16 +318,16 @@ char BMA180Accelerometer::readI2CDeviceByte(char address)
     // transferred with automatic address increment.
     char buf[1] = { 0x00 };
     if(write(file, buf, 1) !=1){
-    	cout << "Failed to Reset Address in readFullSensorState() " << endl;
+        qDebug() << "Failed to Reset Address in readFullSensorState() ";
     }
 
     char buffer[1];
     buffer[0] = address;
     if (read(file, buffer, 2) != 2) {
-        cout << "Failure to read value from I2C Device address." << endl;
+        qDebug() << "Failure to read value from I2C Device address.";
     }
     close(file);
-	// cout << "Finished BMA180 I2C sensor state read" << endl;
+    // qDebug() << "Finished BMA180 I2C sensor state read";
 
     return buffer[0];
 } // end readI2CDeviceByte()

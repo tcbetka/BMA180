@@ -4,22 +4,21 @@
 #
 #-------------------------------------------------
 
-QT       += core
-QT       -= gui
+QT       += core gui
+
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = BMA180_DM
-CONFIG   += console
-CONFIG   -= app_bundle
-
 TEMPLATE = app
 
 
 SOURCES += BMA180Accelerometer.cpp \
-    EasyDriver.cpp \
-    SimpleGPIO.cpp \
-    TestApplication.cpp
+    mainwindow.cpp \
+    main.cpp
 
 HEADERS += \
     BMA180Accelerometer.h \
-    EasyDriver.h \
-    SimpleGPIO.h
+    mainwindow.h
+
+FORMS += \
+    mainwindow.ui
