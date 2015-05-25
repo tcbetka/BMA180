@@ -1,2 +1,5 @@
 # exclude the .user files
 *.user
+
+# excluse all object files
+*.o
