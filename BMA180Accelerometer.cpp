@@ -35,6 +35,7 @@
 #include <stropts.h>
 #include <stdio.h>
 #include <math.h>
+#include <errno.h>
 #include <QDebug>
 
 #define MAX_BUS 64
@@ -49,11 +50,13 @@
 #define BANDWIDTH 	0x20  //bits 7,6,5,4
 #define MODE_CONFIG 0x30  //bits 1,0
 
+#define DEBUG
 
 BMA180Accelerometer::BMA180Accelerometer(int bus, int address)
     : I2CBus(bus),
       I2CAddress(address)
 {
+    qDebug() << "in BMA180 ctor. I2CBus: " << bus << " I2CAddress: " << address;
 	readFullSensorState();
 }
 
@@ -73,8 +76,16 @@ int BMA180Accelerometer::readFullSensorState()
 
     char namebuf[MAX_BUS];
    	snprintf(namebuf, sizeof(namebuf), "/dev/i2c-%d", I2CBus);
+
+#ifdef DEBUG
+    QString foo(namebuf);
+    qDebug() << foo;
+    errno = 0;
+#endif
+
     int file;
     if ((file = open(namebuf, O_RDWR)) < 0) {
+        qDebug() << "file: " << file << " errno:" << errno;
         qDebug() << "Failed to open BMA180 Sensor on " << namebuf << " I2C Bus";
         return(1);
     }
@@ -139,7 +150,8 @@ void BMA180Accelerometer::displayMode(int iterations)
 	for(int i = 0; i < iterations; ++i)
 	{
 		this->readFullSensorState();
-        sprintf(buff, "Rotation (%d, %d, %d)", accelerationX, accelerationY, accelerationZ);
+        snprintf(buff, sizeof(buff), "Rotation (%d, %d, %d)",
+                 accelerationX, accelerationY, accelerationZ);
         QString val(buff);
         qDebug() << val;
     }

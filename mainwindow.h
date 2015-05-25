@@ -19,14 +19,13 @@ public:
 private slots:
     void on_btnClearValues_clicked();
     void on_btnClose_clicked();
-
     void on_btnReadSensor_clicked();
 
 private:
     Ui::MainWindow *ui;
     BMA180Accelerometer* accelerometer;
 
-    // Helper funcc
+    // Helper function
     bool configureBMA180(void);
 };
 

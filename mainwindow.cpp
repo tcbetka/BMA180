@@ -13,7 +13,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
     BMA180Accelerometer* accelerometer = new BMA180Accelerometer(I2C_BUS_1, BMA180_DDR);
 }
 
