@@ -69,7 +69,8 @@ void BMA180Accelerometer::calculatePitchAndRoll()
 
 int BMA180Accelerometer::readFullSensorState()
 {
-   //qDebug() << "Starting BMA180 I2C sensor state read";
+    qDebug() << "Starting BMA180 I2C sensor state read";
+
     char namebuf[MAX_BUS];
    	snprintf(namebuf, sizeof(namebuf), "/dev/i2c-%d", I2CBus);
     int file;
@@ -133,13 +134,14 @@ int BMA180Accelerometer::convertAcceleration(int msb_reg_addr, int lsb_reg_addr)
 
 void BMA180Accelerometer::displayMode(int iterations)
 {
-    QString debugString;
+    char buff[20];
 
 	for(int i = 0; i < iterations; ++i)
 	{
 		this->readFullSensorState();
-        sprintf(debugString, "Rotation (%d, %d, %d)", accelerationX, accelerationY, accelerationZ);
-        qDebug() << debugString;
+        sprintf(buff, "Rotation (%d, %d, %d)", accelerationX, accelerationY, accelerationZ);
+        QString val(buff);
+        qDebug() << val;
     }
 }
 

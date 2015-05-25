@@ -7,6 +7,7 @@
 #define I2C_BUS_1   1
 #define BMA180_DDR  0x40
 
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -36,7 +37,8 @@ void MainWindow::on_btnClose_clicked()
 
 void MainWindow::on_btnReadSensor_clicked()
 {
-    if (initBMA180())
+    bool val = configureBMA180();
+    if (val)
     {
         accelerometer->readFullSensorState();
         int x = accelerometer->getAccelerationX();
@@ -49,7 +51,7 @@ void MainWindow::on_btnReadSensor_clicked()
     }
 }
 
-bool MainWindow::initBMA180()
+bool MainWindow::configureBMA180()
 {
     // TODO: Implement logic to return status from class methods below
     bool flag = true;

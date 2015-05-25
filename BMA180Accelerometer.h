@@ -52,19 +52,19 @@ public:
 
 	// The following do physical reads and writes of the sensors
 	int setRange(BMA180_RANGE range);
-	BMA180_RANGE getRange();
+    BMA180_RANGE getRange();
 	int setBandwidth(BMA180_BANDWIDTH bandwidth);
-	BMA180_BANDWIDTH getBandwidth();
+    BMA180_BANDWIDTH getBandwidth();
 	int setModeConfig(BMA180_MODECONFIG mode);
-	BMA180_MODECONFIG getModeConfig();
+    BMA180_MODECONFIG getModeConfig();
 
 	// Data accessors
-	int getAccelerationX() { return accelerationX; }
-	int getAccelerationY() { return accelerationY; }
-	int getAccelerationZ() { return accelerationZ; }
-	float getPitch() { return pitch; }  // in degrees
-	float getRoll() { return roll; }  // in degrees
-	float getTemperature();
+    int getAccelerationX() const { return accelerationX; }
+    int getAccelerationY() const { return accelerationY; }
+    int getAccelerationZ() const { return accelerationZ; }
+    float getPitch() const { return pitch; }  // in degrees
+    float getRoll() const { return roll; }  // in degrees
+    float getTemperature();
 
 private:
 	int I2CBus, I2CAddress;
@@ -85,6 +85,7 @@ private:
 	int  convertAcceleration(int msb_addr, int lsb_addr);
 	int  writeI2CDeviceByte(char address, char value);
 	void calculatePitchAndRoll();
+
 	//char readI2CDeviceByte(char address);
 };
 

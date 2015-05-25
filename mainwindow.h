@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "BMA180Accelerometer.h"
 #include <QMainWindow>
 
 namespace Ui {
@@ -23,9 +24,10 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    BMA180Accelerometer* accelerometer;
 
     // Helper funcc
-    bool initBMA180(void);
+    bool configureBMA180(void);
 };
 
 #endif // MAINWINDOW_H
