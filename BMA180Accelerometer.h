@@ -62,20 +62,21 @@ public:
     int getAccelerationX() const { return accelerationX; }
     int getAccelerationY() const { return accelerationY; }
     int getAccelerationZ() const { return accelerationZ; }
-    float getPitch() const { return pitch; }  // in degrees
-    float getRoll() const { return roll; }  // in degrees
+    float getPitch() const { return pitch; }    // in degrees
+    float getRoll() const { return roll; }      // in degrees
     float getTemperature();
 
 private:
-	int I2CBus, I2CAddress;
+    int I2CBus;
+    int I2CAddress;
 	char dataBuffer[BMA180_I2C_BUFFER];
 
 	int accelerationX;
 	int accelerationY;
 	int accelerationZ;
-	double pitch;  //in degrees
-	double roll;   //in degrees
-	float temperature; //accurate to 0.5C
+    double pitch;       //in degrees
+    double roll;        //in degrees
+    float temperature;  //accurate to 0.5C
 
 	BMA180_RANGE range;
 	BMA180_BANDWIDTH bandwidth;

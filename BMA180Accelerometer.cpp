@@ -60,6 +60,7 @@ BMA180Accelerometer::BMA180Accelerometer(int bus, int address)
 	readFullSensorState();
 }
 
+
 void BMA180Accelerometer::calculatePitchAndRoll()
 {
 	double accelerationXSquared = this->accelerationX * this->accelerationX;
@@ -70,6 +71,7 @@ void BMA180Accelerometer::calculatePitchAndRoll()
 	this->roll = 180 * atan(accelerationY / sqrt(accelerationXSquared + accelerationZSquared)) / M_PI;
 }
 
+
 int BMA180Accelerometer::readFullSensorState()
 {
     qDebug() << "Starting BMA180 I2C sensor state read";
@@ -79,7 +81,7 @@ int BMA180Accelerometer::readFullSensorState()
 
 #ifdef DEBUG
     QString foo(namebuf);
-    qDebug() << foo;
+    qDebug() << "namebuf: " << foo;
     errno = 0;
 #endif
 
