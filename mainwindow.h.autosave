@@ -21,12 +21,10 @@ private slots:
     void on_btnClearValues_clicked();
     void on_btnClose_clicked();
     void on_btnReadSensor_clicked();
-    void update();
 
 private:
     Ui::MainWindow *ui;
     BMA180Accelerometer* accelerometer;
-    QTimer* timer;
 
     // Helper functions
     bool configureBMA180(void);

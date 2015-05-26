@@ -3,6 +3,7 @@
 #include "ui_mainwindow.h"
 #include <unistd.h>
 #include <QString>
+#include <QDebug>
 
 #define I2C_BUS_1   1
 #define BMA180_DDR  0x40
@@ -14,6 +15,12 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     accelerometer = new BMA180Accelerometer(I2C_BUS_1, BMA180_DDR);
+
+    // If we can configure the accelerometer, we'll start the timer at a 1000ms interval
+    if (configureBMA180()) {
+        ui->btnReadSensor->setEnabled(false);
+        ui->btnClearValues->setEnabled(false);
+    }
 }
 
 MainWindow::~MainWindow()
@@ -24,6 +31,11 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_btnClearValues_clicked()
 {
+    clearLabels();
+}
+
+void MainWindow::clearLabels()
+{
     ui->xValue->setText("");
     ui->yValue->setText("");
     ui->zValue->setText("");
@@ -32,6 +44,20 @@ void MainWindow::on_btnClearValues_clicked()
 void MainWindow::on_btnClose_clicked()
 {
     this->close();
+}
+
+void MainWindow::update()
+{
+    clearLabels();
+    qDebug() << "update() called";
+
+    int x = accelerometer->getAccelerationX();
+    int y = accelerometer->getAccelerationY();
+    int z = accelerometer->getAccelerationZ();
+
+    ui->xValue->setText(QString::number(x));
+    ui->yValue->setText(QString::number(y));
+    ui->zValue->setText(QString::number(z));
 }
 
 void MainWindow::on_btnReadSensor_clicked()

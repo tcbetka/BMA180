@@ -14,11 +14,13 @@ TEMPLATE = app
 
 SOURCES += BMA180Accelerometer.cpp \
     mainwindow.cpp \
-    main.cpp
+    main.cpp \
+    workerthread.cpp
 
 HEADERS += \
     BMA180Accelerometer.h \
-    mainwindow.h
+    mainwindow.h \
+    workerthread.h
 
 FORMS += \
     mainwindow.ui
