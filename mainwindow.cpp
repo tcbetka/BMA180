@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+<<<<<<< HEAD
     accelerometer = new BMA180Accelerometer(I2C_BUS_1, BMA180_DDR);
 
     // If we can configure the accelerometer, we'll start the timer at a 1000ms interval
@@ -21,6 +22,9 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->btnReadSensor->setEnabled(false);
         ui->btnClearValues->setEnabled(false);
     }
+=======
+    BMA180Accelerometer* accelerometer = new BMA180Accelerometer(I2C_BUS_1, BMA180_DDR);
+>>>>>>> parent of d9722dc... Resolved these problems and now the code seems to work fine. The problem was that I was (re)declaring a new object in the ctor...when I simply should have been creating it there. That is why I was getting the message that the accelerometer object wasn't being used--because the one I was creatinging in the ctor was LOCAL to the ctor! So now this is fixed (duh...), and the code seems to work just fine. GOOD NIGHT.
 }
 
 MainWindow::~MainWindow()
