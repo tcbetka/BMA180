@@ -1,9 +1,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "BMA180Accelerometer.h"
+#include "utility.h"
+#include "workerthread.h"
 #include <QMainWindow>
-#include <QTimer>
 
 namespace Ui {
 class MainWindow;
@@ -21,15 +21,15 @@ private slots:
     void on_btnClearValues_clicked();
     void on_btnClose_clicked();
     void on_btnReadSensor_clicked();
-    void update();
+
+public slots:
+    void onProgressChanged(struct AccelValues* vals);
 
 private:
     Ui::MainWindow *ui;
-    BMA180Accelerometer* accelerometer;
-    QTimer* timer;
+    WorkerThread* wkThread;
 
     // Helper functions
-    bool configureBMA180(void);
     void clearLabels();
 };
 

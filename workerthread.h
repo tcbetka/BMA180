@@ -1,14 +1,11 @@
 #ifndef WORKERTHREAD_H
 #define WORKERTHREAD_H
 
+#include "BMA180Accelerometer.h"
+#include "utility.h"
 #include <QThread>
+#include <QTimer>
 
-struct accelValues
-{
-    int x;
-    int y;
-    int z;
-};
 
 class WorkerThread : public QThread
 {
@@ -16,15 +13,20 @@ class WorkerThread : public QThread
 public:
     explicit WorkerThread(QObject *parent = 0);
     void run();
-    
+    struct AccelValues* vals;
+
 signals:
-    void progressChanged(struct accelValues values);
+    void progressChanged(struct AccelValues* values);
     
 public slots:
+    void readSensors();
 
 private:
     QTimer* timer;
-    
+    BMA180Accelerometer* accelerometer;
+
+    // Helper functions
+    bool configureBMA180(void);
 };
 
 #endif // WORKERTHREAD_H

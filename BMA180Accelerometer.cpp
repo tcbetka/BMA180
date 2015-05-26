@@ -50,13 +50,13 @@
 #define BANDWIDTH 	0x20  //bits 7,6,5,4
 #define MODE_CONFIG 0x30  //bits 1,0
 
-#define DEBUG
+//#define DEBUG
 
 BMA180Accelerometer::BMA180Accelerometer(int bus, int address)
     : I2CBus(bus),
       I2CAddress(address)
 {
-    qDebug() << "in BMA180 ctor. I2CBus: " << bus << " I2CAddress: " << address;
+    //qDebug() << "in BMA180 ctor. I2CBus: " << bus << " I2CAddress: " << address;
 	readFullSensorState();
 }
 
@@ -72,7 +72,7 @@ void BMA180Accelerometer::calculatePitchAndRoll()
 
 int BMA180Accelerometer::readFullSensorState()
 {
-    qDebug() << "Starting BMA180 I2C sensor state read";
+    //qDebug() << "Starting BMA180 I2C sensor state read";
 
     char namebuf[MAX_BUS];
    	snprintf(namebuf, sizeof(namebuf), "/dev/i2c-%d", I2CBus);

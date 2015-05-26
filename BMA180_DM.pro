@@ -20,7 +20,8 @@ SOURCES += BMA180Accelerometer.cpp \
 HEADERS += \
     BMA180Accelerometer.h \
     mainwindow.h \
-    workerthread.h
+    workerthread.h \
+    utility.h
 
 FORMS += \
     mainwindow.ui

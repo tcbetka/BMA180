@@ -1,12 +1,10 @@
 #include "mainwindow.h"
 #include "BMA180Accelerometer.h"
+#include "workerthread.h"
 #include "ui_mainwindow.h"
 #include <unistd.h>
 #include <QString>
 #include <QDebug>
-
-#define I2C_BUS_1   1
-#define BMA180_DDR  0x40
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -14,22 +12,21 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-<<<<<<< HEAD
-    accelerometer = new BMA180Accelerometer(I2C_BUS_1, BMA180_DDR);
+    wkThread = new WorkerThread;
 
-    // If we can configure the accelerometer, we'll start the timer at a 1000ms interval
-    if (configureBMA180()) {
-        ui->btnReadSensor->setEnabled(false);
-        ui->btnClearValues->setEnabled(false);
-    }
-=======
-    BMA180Accelerometer* accelerometer = new BMA180Accelerometer(I2C_BUS_1, BMA180_DDR);
->>>>>>> parent of d9722dc... Resolved these problems and now the code seems to work fine. The problem was that I was (re)declaring a new object in the ctor...when I simply should have been creating it there. That is why I was getting the message that the accelerometer object wasn't being used--because the one I was creatinging in the ctor was LOCAL to the ctor! So now this is fixed (duh...), and the code seems to work just fine. GOOD NIGHT.
+    // Make the signal/slot connection between the threads
+    connect(wkThread, SIGNAL(progressChanged(AccelValues*)),
+            SLOT(onProgressChanged(AccelValues*)));
+
+    // Invoke the WorkerThread::run() in a new thread
+    wkThread->start();
+
+    ui->btnReadSensor->setEnabled(false);
+    ui->btnClearValues->setEnabled(false);
 }
 
 MainWindow::~MainWindow()
 {
-    delete accelerometer;
     delete ui;
 }
 
@@ -47,48 +44,32 @@ void MainWindow::clearLabels()
 
 void MainWindow::on_btnClose_clicked()
 {
-    this->close();
-}
+    // TODO: Terminate the thread gracefully by implementing the QThread::terminated() signal
+    //      See: http://doc.qt.io/qt-4.8/qthread.html#terminate
+    wkThread->terminate();
 
-void MainWindow::update()
-{
-    clearLabels();
-    qDebug() << "update() called";
-
-    int x = accelerometer->getAccelerationX();
-    int y = accelerometer->getAccelerationY();
-    int z = accelerometer->getAccelerationZ();
-
-    ui->xValue->setText(QString::number(x));
-    ui->yValue->setText(QString::number(y));
-    ui->zValue->setText(QString::number(z));
-}
-
-void MainWindow::on_btnReadSensor_clicked()
-{
-    bool val = configureBMA180();
-    if (val)
-    {
-        accelerometer->readFullSensorState();
-        int x = accelerometer->getAccelerationX();
-        int y = accelerometer->getAccelerationY();
-        int z = accelerometer->getAccelerationZ();
-
-        ui->xValue->setText(QString::number(x));
-        ui->yValue->setText(QString::number(y));
-        ui->zValue->setText(QString::number(z));
+    // For now we can simply wait until the thread gets terminatted, and then close the form
+    if (wkThread->wait()) {
+        this->close();
     }
 }
 
-bool MainWindow::configureBMA180()
+
+void MainWindow::onProgressChanged(struct AccelValues *vals)
 {
-    // TODO: Implement logic to return status from class methods below
-    bool flag = true;
+    //qDebug() << "Signal received";
+    //clearLabels();
 
-    // Accelerometer Test: Use i2c-1 (bus 1) and address 0x40, as the chip is configured for that address
-    accelerometer->setRange(PLUSMINUS_1_G);
-    accelerometer->setBandwidth(BW_150HZ);
-
-    // TODO: For now, simply return true
-    return flag;
+    // Get these values from the worker thread, and update the GUI
+    ui->xValue->setText(QString::number(vals->x));
+    ui->yValue->setText(QString::number(vals->y));
+    ui->zValue->setText(QString::number(vals->z));
+    ui->tempValue->setText(QString::number(vals->temp));
 }
+
+
+void MainWindow::on_btnReadSensor_clicked()
+{
+    //TODO: May need to reimplement this later
+}
+
