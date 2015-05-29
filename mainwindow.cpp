@@ -15,8 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
     wkThread = new WorkerThread;
 
     // Make the signal/slot connection between the threads
-    connect(wkThread, SIGNAL(progressChanged(AccelValues*)),
-            SLOT(onProgressChanged(AccelValues*)));
+    connect(wkThread, SIGNAL(progressChanged(AccelValues*)), SLOT(onProgressChanged(AccelValues*)));
 
     // Invoke the WorkerThread::run() in a new thread
     wkThread->start();
