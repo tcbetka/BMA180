@@ -57,17 +57,17 @@ BMA180Accelerometer::BMA180Accelerometer(int bus, int address)
       I2CAddress(address)
 {
     //qDebug() << "in BMA180 ctor. I2CBus: " << bus << " I2CAddress: " << address;
-	readFullSensorState();
+    readFullSensorState();
 }
 
 void BMA180Accelerometer::calculatePitchAndRoll()
 {
-	double accelerationXSquared = this->accelerationX * this->accelerationX;
-	double accelerationYSquared = this->accelerationY * this->accelerationY;
-	double accelerationZSquared = this->accelerationZ * this->accelerationZ;
+    double accelerationXSquared = this->accelerationX * this->accelerationX;
+    double accelerationYSquared = this->accelerationY * this->accelerationY;
+    double accelerationZSquared = this->accelerationZ * this->accelerationZ;
 
-	this->pitch = 180 * atan(accelerationX / sqrt(accelerationYSquared + accelerationZSquared)) / M_PI;
-	this->roll = 180 * atan(accelerationY / sqrt(accelerationXSquared + accelerationZSquared)) / M_PI;
+    this->pitch = 180 * atan(accelerationX / sqrt(accelerationYSquared + accelerationZSquared)) / M_PI;
+    this->roll = 180 * atan(accelerationY / sqrt(accelerationXSquared + accelerationZSquared)) / M_PI;
 }
 
 int BMA180Accelerometer::readFullSensorState()
@@ -75,7 +75,7 @@ int BMA180Accelerometer::readFullSensorState()
     //qDebug() << "Starting BMA180 I2C sensor state read";
 
     char namebuf[MAX_BUS];
-   	snprintf(namebuf, sizeof(namebuf), "/dev/i2c-%d", I2CBus);
+    snprintf(namebuf, sizeof(namebuf), "/dev/i2c-%d", I2CBus);
 
 #ifdef DEBUG
     QString foo(namebuf);
@@ -134,10 +134,10 @@ int BMA180Accelerometer::convertAcceleration(int msb_reg_addr, int lsb_reg_addr)
 {
     // qDebug() << "Converting " << (int) dataBuffer[msb_reg_addr] << " and "
     //        << (int) dataBuffer[lsb_reg_addr];
-	short temp = dataBuffer[msb_reg_addr];
-	temp = (temp << 8) | (dataBuffer[lsb_reg_addr]);
-	temp = temp >> 2;
-	temp = ~temp + 1;
+    short temp = dataBuffer[msb_reg_addr];
+    temp = (temp << 8) | (dataBuffer[lsb_reg_addr]);
+    temp = temp >> 2;
+    temp = ~temp + 1;
     // qDebug() << "The X acceleration is " << temp;
 
 	return temp;
@@ -147,9 +147,9 @@ void BMA180Accelerometer::displayMode(int iterations)
 {
     char buff[20];
 
-	for(int i = 0; i < iterations; ++i)
-	{
-		this->readFullSensorState();
+    for(int i = 0; i < iterations; ++i)
+    {
+        this->readFullSensorState();
         snprintf(buff, sizeof(buff), "Rotation (%d, %d, %d)",
                  accelerationX, accelerationY, accelerationZ);
         QString val(buff);
@@ -163,112 +163,108 @@ void BMA180Accelerometer::displayMode(int iterations)
 
 float BMA180Accelerometer::getTemperature()
 {
-	int offset = -40;  // -40 degrees C
-	this->readFullSensorState();
-	char temp = dataBuffer[TEMP]; // = -80C 0b10000000  0b00000010; = +25C
+    int offset = -40;  // -40 degrees C
+    this->readFullSensorState();
+    char temp = dataBuffer[TEMP]; // = -80C 0b10000000  0b00000010; = +25C
 
-	//char temp = this->readI2CDeviceByte(TEMP);
-	//this->readFullSensorState();
+    //char temp = this->readI2CDeviceByte(TEMP);
+    //this->readFullSensorState();
     //char temp = dataBuffer[TEMP];
 
-	int temperature;
-	if (temp & 0x80) {
-		temp = ~temp + 0b00000001;
-		temperature = 128 - temp;
-	} else {
-		temperature = 128 + temp;
-	}
-	this->temperature = offset + ((float)temperature * 0.5f);
+    int temperature;
+    if (temp & 0x80) {
+	temp = ~temp + 0b00000001;
+	temperature = 128 - temp;
+    } else {
+	temperature = 128 + temp;
+    }
+    this->temperature = offset + ((float)temperature * 0.5f);
 
     //qDebug() << "The temperature is " << this->temperature;
-	//int temp_off = dataBuffer[0x37]>>1;
+    //int temp_off = dataBuffer[0x37]>>1;
     //qDebug() << "Temperature offset raw value is: " << temp_off;
 
-	return this->temperature;
+    return this->temperature;
 } // end getTemperature()
 
 BMA180_RANGE BMA180Accelerometer::getRange()
 {
-	this->readFullSensorState();
-	char temp = dataBuffer[RANGE];
+    this->readFullSensorState();
+    char temp = dataBuffer[RANGE];
 
-	//char temp = this->readI2CDeviceByte(RANGE);  //bits 3,2,1
-
-	temp = temp & 0b00001110;
-	temp = temp >> 1;
+    //char temp = this->readI2CDeviceByte(RANGE);  //bits 3,2,1
+    temp = temp & 0b00001110;
+    temp = temp >> 1;
 
     // qDebug() << "The current range is: " << (int)temp;
-
-	this->range = (BMA180_RANGE)temp;
-
-	return this->range;
+    this->range = (BMA180_RANGE)temp;
+    
+    return this->range;
 } // end getTemperature()
 
 int BMA180Accelerometer::setRange(BMA180_RANGE range)
 {
-	//char current = this->readI2CDeviceByte(RANGE);  //bits 3,2,1
+    //char current = this->readI2CDeviceByte(RANGE);  //bits 3,2,1
 
-	this->readFullSensorState();
-	char current = dataBuffer[RANGE];
-	char temp = range << 1; 			//move value into bits 3,2,1
-	current = current & 0b11110001; 	//clear the current bits 3,2,1
-	temp = current | temp;
-	if (this->writeI2CDeviceByte(RANGE, temp)!= 0) {
+    this->readFullSensorState();
+    char current = dataBuffer[RANGE];
+    char temp = range << 1; 			//move value into bits 3,2,1
+    current = current & 0b11110001; 	//clear the current bits 3,2,1
+    temp = current | temp;
+    if (this->writeI2CDeviceByte(RANGE, temp)!= 0) {
         qDebug() << "Failure to update RANGE value";
-		return 1;
-	}
+	return 1;
+    }
 
-	return 0;
+    return 0;
 } // end setRange()
 
 BMA180_BANDWIDTH BMA180Accelerometer::getBandwidth()
 {
-	this->readFullSensorState();
-	char temp = dataBuffer[BANDWIDTH];   //bits 7->4
+    this->readFullSensorState();
+    char temp = dataBuffer[BANDWIDTH];   //bits 7->4
 
-	//char temp = this->readI2CDeviceByte(BANDWIDTH);  //bits 7,6,5,4
+    //char temp = this->readI2CDeviceByte(BANDWIDTH);  //bits 7,6,5,4
     // qDebug() << "The value of bandwidth returned is: " << (int)temp;
 
-	temp = temp & 0b11110000;
-	temp = temp >> 4;
+    temp = temp & 0b11110000;
+    temp = temp >> 4;
 
     // qDebug() << "The current bandwidth is: " << (int)temp;
-	this->bandwidth = (BMA180_BANDWIDTH) temp;
+    this->bandwidth = (BMA180_BANDWIDTH) temp;
 
-	return this->bandwidth;
+    return this->bandwidth;
 } // end getBandwidth()
 
 int BMA180Accelerometer::setBandwidth(BMA180_BANDWIDTH bandwidth)
 {
-	//char current = this->readI2CDeviceByte(BANDWIDTH);  //bits 7,6,5,4
-
-	this->readFullSensorState();
+    //char current = this->readI2CDeviceByte(BANDWIDTH);  //bits 7,6,5,4
+    this->readFullSensorState();
     char current = dataBuffer[BANDWIDTH];   //bits 7->4
-	char temp = bandwidth << 4; 			//move value into bits 7,6,5,4
-	current = current & 0b00001111; 		//clear the current bits 7,6,5,4
-	temp = current | temp;
-	if(this->writeI2CDeviceByte(BANDWIDTH, temp) != 0) {
+    char temp = bandwidth << 4; 			//move value into bits 7,6,5,4
+    current = current & 0b00001111; 		//clear the current bits 7,6,5,4
+    temp = current | temp;
+    if(this->writeI2CDeviceByte(BANDWIDTH, temp) != 0) {
         qDebug() << "Failure to update BANDWIDTH value";
-		return 1;
-	}
+	return 1;
+    }
 
-	return 0;
+    return 0;
 } // end setBandwidth()
 
 BMA180_MODECONFIG BMA180Accelerometer::getModeConfig()
 {
-	//char temp = dataBuffer[MODE_CONFIG];   //bits 1,0
-	//char temp = this->readI2CDeviceByte(MODE_CONFIG);  //bits 1,0
+    //char temp = dataBuffer[MODE_CONFIG];   //bits 1,0
+    //char temp = this->readI2CDeviceByte(MODE_CONFIG);  //bits 1,0
 
-	this->readFullSensorState();
+    this->readFullSensorState();
     char temp = dataBuffer[MODE_CONFIG];
-	temp = temp & 0b00000011;
+    temp = temp & 0b00000011;
 
     // qDebug() << "The current mode config is: " << (int)temp;
+    this->modeConfig = (BMA180_MODECONFIG)temp;
 
-	this->modeConfig = (BMA180_MODECONFIG)temp;
-
-	return this->modeConfig;
+    return this->modeConfig;
 } // end getModeConfig()
 
 int BMA180Accelerometer::writeI2CDeviceByte(char address, char value)
@@ -350,7 +346,7 @@ char BMA180Accelerometer::readI2CDeviceByte(char address)
 
 BMA180Accelerometer::~BMA180Accelerometer()
 {
-	// TODO Auto-generated destructor stub
+    // TODO Auto-generated destructor stub
 }
 
 
