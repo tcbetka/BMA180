@@ -14,6 +14,10 @@ WorkerThread::WorkerThread(QObject *parent) :
 
 void WorkerThread::readSensors()
 {
+    // NOTE: Should probably have a condition here, based on a flag set by the client code. If the user
+    //          requests a STOP, then set the flag to false--and simply return here, after terminating the 
+    //          thread more gracefully.
+    
     //qDebug() << "Sensors read";
     accelerometer->readFullSensorState();
     vals->x = accelerometer->getAccelerationX();
