@@ -45,9 +45,12 @@ void MainWindow::on_btnClose_clicked()
 {
     // TODO: Terminate the thread gracefully by implementing the QThread::terminated() signal
     //      See: http://doc.qt.io/qt-4.8/qthread.html#terminate
+    // THIS IS NOT the best way to do this--should just set a wkThread flag, that is then checked
+    //  in that thread when a read is set to occur. If the user requests a stop, then set the flag
+    //  to false so the read won't happen. Then terminate the thread after that...
     wkThread->terminate();
 
-    // For now we can simply wait until the thread gets terminatted, and then close the form
+    // For now we can simply wait until the thread gets terminated, and then close the form
     if (wkThread->wait()) {
         this->close();
     }
