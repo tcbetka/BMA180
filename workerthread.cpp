@@ -28,7 +28,7 @@ void WorkerThread::readSensors()
 // This method actually gets called from the client (GUI) thread
 void WorkerThread::run()
 {
-    // If we can configure the accelerometer, we'll start the timer at a 1000ms interval
+    // If we can configure the accelerometer, we'll start the timer at a 250ms interval
     if (configureBMA180())
     {
         qDebug() << "Starting the timer";
