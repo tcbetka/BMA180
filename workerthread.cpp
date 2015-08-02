@@ -5,7 +5,7 @@
 WorkerThread::WorkerThread(QObject *parent) :
     QThread(parent)
 {
-    accelerometer = new BMA180Accelerometer(I2C_BUS_0, BMA180_DDR);
+    accelerometer = new BMA180Accelerometer(I2C_BUS_0, BMA180_ADDR);
     timer = new QTimer(this);
     vals = new struct AccelValues;
 
