@@ -3,7 +3,7 @@
 
 #define I2C_BUS_0   0
 #define I2C_BUS_1   1
-#define BMA180_DDR  0x40
+#define BMA180_ADDR  0x40
 
 struct AccelValues
 {
